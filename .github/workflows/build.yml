@@ -10,8 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Unpack project
-        run: unzip -o antub-project.zip
+        run: |
+          best=""
+          bt=0
+          for f in *.zip; do
+            [ -e "$f" ] || { echo "В репозитории нет zip-файла"; exit 1; }
+            t=$(git log -1 --format=%ct -- "$f")
+            if [ "${t:-0}" -ge "$bt" ]; then best="$f"; bt="${t:-0}"; fi
+          done
+          echo "Using: $best"
+          unzip -o "$best"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
